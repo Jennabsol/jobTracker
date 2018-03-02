@@ -17,5 +17,7 @@ namespace jobTracker.Models
         [Required]
         [Display(Name = "Last Name")]
         public string LastName { get; set; }
+
+        public virtual ICollection<Job> Jobs { get; set; }
     }
 }
