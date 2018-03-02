@@ -7,23 +7,38 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using jobTracker.Data;
 using jobTracker.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace jobTracker.Controllers
 {
     public class ContactsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ContactsController(ApplicationDbContext context)
+       
+
+        public ContactsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
+        private Task<ApplicationUser> GetCurrentUserAsync() => _userManager.GetUserAsync(HttpContext.User);
 
         // GET: Contacts
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Contact.Include(c => c.Company);
-            return View(await applicationDbContext.ToListAsync());
+            var user = await GetCurrentUserAsync();
+            var contact = _context.Contact
+                .Where(c => c.User == user)
+                .Include(c => c.Company).ToList();
+            //return View(await applicationDbContext.ToListAsync());
+            if (contact == null)
+            {
+                return NotFound();
+            }
+
+            return View(await _context.Contact.Where(pt => pt.User == user).ToListAsync());
         }
 
         // GET: Contacts/Details/5
@@ -59,6 +74,8 @@ namespace jobTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,FirstName,LastName,Email,Phone,Notes,CompanyId")] Contact contact)
         {
+            ModelState.Remove("User");
+            contact.User = await GetCurrentUserAsync();
             if (ModelState.IsValid)
             {
                 _context.Add(contact);
@@ -97,7 +114,8 @@ namespace jobTracker.Controllers
             {
                 return NotFound();
             }
-
+            ModelState.Remove("User");
+            contact.User = await GetCurrentUserAsync();
             if (ModelState.IsValid)
             {
                 try

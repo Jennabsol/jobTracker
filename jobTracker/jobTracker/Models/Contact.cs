@@ -24,7 +24,7 @@ namespace jobTracker.Models
 
         [Phone]
         [Display(Name = "Phone Number")]
-        public int Phone { get; set; }
+        public string Phone { get; set; }
 
         public string Notes { get; set; }
 
