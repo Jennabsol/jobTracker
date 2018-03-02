@@ -15,7 +15,7 @@ namespace jobTracker.Models
         [Display(Name= "Company Name")]
         public string Name { get; set; }
 
-        [Url]
+        
         [Display(Name = "Company Website")]
         public string Website { get; set; }
 
